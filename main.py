@@ -16,7 +16,7 @@ DESCRIPTION = "Probably the easiest way to enter the giveaways on different webs
 AUTHOR = "Dmitriy Baranov"
 AUTHOR_EMAIL = "baranov.dmt@gmail.com"
 URL = "https://github.com/theWaR13/SteamGiveawayManager"
-VERSION = 0.4.0
+VERSION = 0.4.1
 """
 
 from multiprocessing.dummy import Pool as ThreadPool

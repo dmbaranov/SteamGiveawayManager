@@ -1,7 +1,4 @@
-# giv_id: "140214" - request payload
-# ticket_price: "1"
-#
-
+import sys
 from random import randint
 from bs4 import BeautifulSoup
 from the_bot import TheBot
@@ -33,12 +30,12 @@ class IndiegalaBot(TheBot):
         """
         page = self.get_page("https://www.indiegalas.com/giveaways")
         points_parser = BeautifulSoup(page, "html.parser")
-        
+
         try:
             points = self.get_number(points_parser.find_all(class_="right coins-amount")[0]["title"])
         except IndexError:
             self.print_message("Can't find your points. Check your cookies in settings.ini", "ERROR")
-            return
+            sys.exit(1)
         self._user_points = points
 
     def has_already_entered(self, url):
@@ -89,8 +86,9 @@ class IndiegalaBot(TheBot):
                     self.print_message("Error: " + r.reason, "ERROR")
             else:
                 self.print_message("You don't have enough points to enter this giveaway...", "WARNING")
+                continue
 
         else:
-            self.print_message("Sleeping for 1 hour...", "WARNING")
-            self.pause_bot(3600)
+            self.print_message("Sleeping for 30 minutes...", "WARNING")
+            self.pause_bot(1800)
             self.parse_page()

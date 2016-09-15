@@ -35,7 +35,7 @@ class GameminerBot(TheBot):
         try:
             self._user_points = int(points[0].text)
         except IndexError:
-            self.print_message("Error occured while loading user points...", "ERROR")
+            self.print_message("Can't find your points. Check your cookies in settings.ini", "ERROR")
             sys.exit(1)
 
     def parse_page(self):
@@ -48,8 +48,6 @@ class GameminerBot(TheBot):
 
         for item in giveaways:
             self.get_user_points()
-            giveaway_url = ""
-            giveaway_price = ""
 
             try:
                 giveaway_url = item.find_all(class_="giveaway-join")[0]["action"]
@@ -57,7 +55,7 @@ class GameminerBot(TheBot):
                 self.print_message("You have already joined this giveaway or an error has occured, skipping", "WARNING")
                 continue
             try:
-                giveaway_price = int(item.find_all(class_="g-coal-icon g-white")[0].text[:-5])
+                giveaway_price = self.get_number(item.find_all(class_="g-coal-icon g-white")[0].text)
             except IndexError:
                 self.print_message("Something wrong with a giveaway, probably this one requires gold", "WARNING")
                 continue
@@ -65,7 +63,6 @@ class GameminerBot(TheBot):
             if self._user_points < 5:
                 self.print_message("Sleeping for 1 hour...", "WARNING")
                 self.pause_bot(3600)
-                self.parse_page()
 
             if self._user_points > giveaway_price:
                 # Gameminer requires _xsrf cookie to be sent as Form data
@@ -73,9 +70,10 @@ class GameminerBot(TheBot):
                                        data={"_xsrf": self._session.cookies.get("_xsrf"), "json": "true"})
                 if r.status_code == 200:
                     self.print_message("Success", "SUCCESS")
+                    self.pause_bot(randint(3, 8))
                 else:
                     self.print_message("Error: " + r.reason, "ERROR")
-                self.pause_bot(randint(3, 8))
+
             else:
                 self.print_message("You don't have enough points to enter this giveaway...", "WARNING")
                 continue

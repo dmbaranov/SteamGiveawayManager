@@ -1,4 +1,4 @@
-import re
+import sys
 from random import randint
 from bs4 import BeautifulSoup
 from the_bot import TheBot
@@ -31,13 +31,17 @@ class OpiumpulsesBot(TheBot):
         """
         page = self.get_page("http://www.opiumpulses.com/")
         points_parser = BeautifulSoup(page, "html.parser")
-        points_str = points_parser.find_all("a", attrs={"style": "padding: 3px 10px;cursor: default;"})[0].text
-        self._user_points = int(points_str[8:])
+        try:
+            self._user_points = self.get_number(points_parser.find_all("a", attrs={"style": "padding: 3px 10px;cursor: default;"})[0].text)
+        except IndexError:
+            self.print_message("Can't find your points. Check your cookies in settings.ini", "ERROR")
+            sys.exit(1)
 
     def parse_page(self):
         """
         Parsing page and entering every available giveaway
         """
+        self.get_user_points()
         page = self.get_page("http://www.opiumpulses.com/")
         page_parser = BeautifulSoup(page, "html.parser")
         giveaways = page_parser.find_all(class_="col-xs-4 col-md-3 well product-box")
@@ -50,7 +54,7 @@ class OpiumpulsesBot(TheBot):
                 self.print_message("You have already entered this giveaway", "WARNING")
                 continue
 
-            giveaway_price = re.findall(r'\d+', giveaway_data[2].text)
+            giveaway_price = self.get_number(giveaway_data[2].text)
             giveaway_url = giveaway_data[2]["href"]
 
             if len(giveaway_price) == 0 or self._user_points > int(giveaway_price[0]):
@@ -63,10 +67,6 @@ class OpiumpulsesBot(TheBot):
             elif self._user_points < giveaway_price:
                 self.print_message("You don't have enough points to enter this giveaway", "WARNING")
                 continue
-            else:
-                self.print_message("Sleeping for 1 hour...", "WARNING")
-                self.pause_bot(3600)
-                self.parse_page()
         else:
             self.print_message("Sleeping for 1 hour...", "WARNING")
             self.pause_bot(3600)
