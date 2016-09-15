@@ -85,7 +85,6 @@ class SteamgiftsBot(TheBot):
         if "is-hidden" in enter_button:
             return False
         else:
-            print("")
             giveaway_page_data = giveaway_page_parser.find_all(class_="sidebar sidebar--wide")[0]
             xsrf_token = giveaway_page_data.find("input", {"name": "xsrf_token"})["value"]
             code = giveaway_page_data.find("input", {"name": "code"})["value"]
