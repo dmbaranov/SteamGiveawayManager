@@ -1,14 +1,16 @@
-import sys
+# giv_id: "140214" - request payload
+# ticket_price: "1"
+#
+
 from random import randint
 from bs4 import BeautifulSoup
 from the_bot import TheBot
 
 
-class GameminerBot(TheBot):
+class IndiegalaBot(TheBot):
     """
-    Bot for Opiumpulses.com
+    Bot for Indiegala.com
     """
-
     def __init__(self, bot_name, cookies):
         """
         Initiating bot
@@ -29,56 +31,60 @@ class GameminerBot(TheBot):
         """
         Getting current amount of points
         """
-        page = self.get_page("http://gameminer.net/")
+        page = self.get_page("https://www.indiegala.com/giveaways")
         points_parser = BeautifulSoup(page, "html.parser")
-        points = points_parser.find_all(class_="user__coal")
-        try:
-            self._user_points = int(points[0].text)
-        except IndexError:
-            self.print_message("Error occured while loading user points...", "ERROR")
-            sys.exit(1)
+        points = self.get_number(points_parser.find_all(class_="right coins-amount")[0]["title"])
+        self._user_points = points
+
+    def has_already_entered(self, url):
+        page = self.get_page(url)
+        page_parser = BeautifulSoup(page, "html.parser")
+
+        giveaway_has_ticket = page_parser.find_all(class_="giv-coupon relative animated-coupon")
+
+        if len(giveaway_has_ticket) == 0:
+            return True
+        else:
+            return False
 
     def parse_page(self):
         """
         Parsing page and entering every available giveaway
         """
-        page = self.get_page("http://gameminer.net/")
+        page = self.get_page("https://www.indiegala.com/giveaways")
         page_parser = BeautifulSoup(page, "html.parser")
-        giveaways = page_parser.find_all(class_="giveaway__container")
+        giveaways = page_parser.find_all(class_="tickets-col")
 
         for item in giveaways:
             self.get_user_points()
-            giveaway_url = ""
-            giveaway_price = ""
 
             try:
-                giveaway_url = item.find_all(class_="giveaway-join")[0]["action"]
+                giveaway_url = item.find("a")["href"]
             except IndexError:
                 self.print_message("You have already joined this giveaway or an error has occured, skipping", "WARNING")
                 continue
             try:
-                giveaway_price = int(item.find_all(class_="g-coal-icon g-white")[0].text[:-5])
+                giveaway_price = self.get_number(item.find(class_="ticket-price").find("strong").text)
             except IndexError:
                 self.print_message("Something wrong with a giveaway, probably this one requires gold", "WARNING")
                 continue
 
-            if self._user_points < 5:
-                self.print_message("Sleeping for 1 hour...", "WARNING")
-                self.pause_bot(3600)
-                self.parse_page()
+            if self.has_already_entered("https://www.indiegala.com" + giveaway_url):
+                self.print_message("You have already entered this giveaway, skipping...", "WARNING")
+                continue
 
             if self._user_points > giveaway_price:
-                # Gameminer requires _xsrf cookie to be sent as Form data
-                r = self._session.post("http://gameminer.net" + giveaway_url,
-                                       data={"_xsrf": self._session.cookies.get("_xsrf"), "json": "true"})
+                giveaway_id = giveaway_url.split('/')[-1]
+                r = self._session.post("https://www.indiegala.com/giveaways/new_entry",
+                                       json={"giv_id": giveaway_id, "ticket_price": giveaway_price})
                 if r.status_code == 200:
                     self.print_message("Success", "SUCCESS")
+                    self.pause_bot(randint(3, 8))
                 else:
                     self.print_message("Error: " + r.reason, "ERROR")
-                self.pause_bot(randint(3, 8))
             else:
                 self.print_message("You don't have enough points to enter this giveaway...", "WARNING")
-                continue
+
         else:
             self.print_message("Sleeping for 1 hour...", "WARNING")
             self.pause_bot(3600)

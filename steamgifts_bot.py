@@ -18,7 +18,7 @@ class SteamgiftsBot(TheBot):
 
     def start(self):
         """
-        Starting current bot
+        Starting a bot
         """
         self.start_bot()
         self.parse_page()

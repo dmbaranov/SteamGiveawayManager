@@ -1,5 +1,6 @@
 import sys
 import time
+import re
 import configparser
 import requests
 from datetime import datetime
@@ -14,7 +15,7 @@ TERMINAL_COLORS = {
 
 
 class TheBot():
-    """Base class for all giveaways bots Contains a set of functions that all bots use."""
+    """Base class for all giveaways bots. Contains a set of functions that all bots use."""
 
     def __init__(self, bot_name, cookies):
         """
@@ -67,9 +68,18 @@ class TheBot():
             self.print_message("Error occured while getting a page with the url: {0}".format(url), "ERROR")
 
     @staticmethod
+    def get_number(str):
+        """
+        This method return all numbers from the string. You can use it to extract points from the string.
+        :param str: a string from where you want to extract numbers
+        :return: all numbers in string as Integer
+        """
+        return int(re.findall(r'\d+', str)[0])
+
+    @staticmethod
     def pause_bot(sec):
         """
-        When bot has finished with current page it sleeps and then starts again
+        Pauses bot for 'sec' seconds. Use it to restore points.
         :param sec: how many second bot should sleep
         """
         time.sleep(sec)

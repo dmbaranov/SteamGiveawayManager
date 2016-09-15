@@ -8,6 +8,7 @@ class OpiumpulsesBot(TheBot):
     """
     Bot for Opiumpulses.com
     """
+
     def __init__(self, bot_name, cookies):
         """
         Initiating bot
