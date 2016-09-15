@@ -60,8 +60,12 @@ class TheBot():
         :param url: url of the web
         :return: returns page
         """
+        try:
+            r = self._session.get(url)
+        except requests.RequestException:
+            self.print_message("Can't receive page. Probably site is down", "ERROR")
+            sys.exit(1)
 
-        r = self._session.get(url)
         if r.status_code == 200:
             return r.text
         else:

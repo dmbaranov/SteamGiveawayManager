@@ -31,9 +31,14 @@ class IndiegalaBot(TheBot):
         """
         Getting current amount of points
         """
-        page = self.get_page("https://www.indiegala.com/giveaways")
+        page = self.get_page("https://www.indiegalas.com/giveaways")
         points_parser = BeautifulSoup(page, "html.parser")
-        points = self.get_number(points_parser.find_all(class_="right coins-amount")[0]["title"])
+        
+        try:
+            points = self.get_number(points_parser.find_all(class_="right coins-amount")[0]["title"])
+        except IndexError:
+            self.print_message("Can't find your points. Check your cookies in settings.ini", "ERROR")
+            return
         self._user_points = points
 
     def has_already_entered(self, url):
