@@ -70,6 +70,7 @@ class TheBot():
             return r.text
         else:
             self.print_message("Error occured while getting a page with the url: {0}".format(url), "ERROR")
+            sys.exit(1)
 
     @staticmethod
     def get_number(str):
