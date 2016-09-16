@@ -10,7 +10,8 @@ USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Ge
 TERMINAL_COLORS = {
     "SUCCESS": "\033[92m",
     "WARNING": "\033[93m",
-    "ERROR": "\033[91m"
+    "ERROR": "\033[91m",
+    "END": '\033[0m'
 }
 
 
@@ -52,7 +53,7 @@ class TheBot():
         :param color: color of the message, use SUCCESS, WARNING or ERROR
         """
         cur_time = "[ {0} ] ".format(datetime.now().strftime("%H:%M:%S"))
-        print(cur_time + "{0}: ".format(self._bot_name) + TERMINAL_COLORS[color] + str(message) + TERMINAL_COLORS["SUCCESS"])
+        print(cur_time + "{0}: ".format(self._bot_name) + TERMINAL_COLORS[color] + str(message) + TERMINAL_COLORS["END"])
 
     def get_page(self, url):
         """
@@ -72,14 +73,20 @@ class TheBot():
             self.print_message("Error occured while getting a page with the url: {0}".format(url), "ERROR")
             sys.exit(1)
 
-    @staticmethod
-    def get_number(str):
+    def get_number(self, str):
         """
         This method return all numbers from the string. You can use it to extract points from the string.
         :param str: a string from where you want to extract numbers
         :return: all numbers in string as Integer
         """
-        return int(re.findall(r'\d+', str)[0])
+        number = 0
+        try:
+            number = int(re.findall(r'\d+', str)[0])
+        except IndexError:
+            self.print_message("Number wasn't found in string, return 0", "ERROR")
+            return 0
+
+        return number
 
     @staticmethod
     def pause_bot(sec):

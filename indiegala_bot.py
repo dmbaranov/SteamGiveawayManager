@@ -6,7 +6,7 @@ from the_bot import TheBot
 
 class IndiegalaBot(TheBot):
     """
-    Bot for Indiegala.com
+    Bot for indiegala.com
     """
     def __init__(self, bot_name, cookies):
         """
@@ -16,6 +16,7 @@ class IndiegalaBot(TheBot):
         """
         super().__init__(bot_name, cookies)
         self._user_points = 0
+        self._url = "https://www.indiegala.com/giveaways"
 
     def start(self):
         """
@@ -28,7 +29,7 @@ class IndiegalaBot(TheBot):
         """
         Getting current amount of points
         """
-        page = self.get_page("https://www.indiegalas.com/giveaways")
+        page = self.get_page(self._url)
         points_parser = BeautifulSoup(page, "html.parser")
 
         try:
@@ -53,7 +54,7 @@ class IndiegalaBot(TheBot):
         """
         Parsing page and entering every available giveaway
         """
-        page = self.get_page("https://www.indiegala.com/giveaways")
+        page = self.get_page(self._url)
         page_parser = BeautifulSoup(page, "html.parser")
         giveaways = page_parser.find_all(class_="tickets-col")
 
@@ -61,7 +62,9 @@ class IndiegalaBot(TheBot):
             self.get_user_points()
 
             try:
-                giveaway_url = item.find("a")["href"]
+                # We don't need /giveaways in the beginning so we get rid of it
+                temp_url = item.find("a")["href"].split("/")
+                giveaway_url = "/" + "/".join(temp_url[2:])
             except IndexError:
                 self.print_message("You have already joined this giveaway or an error has occured, skipping", "WARNING")
                 continue
@@ -71,13 +74,13 @@ class IndiegalaBot(TheBot):
                 self.print_message("Something wrong with a giveaway, probably this one requires gold", "WARNING")
                 continue
 
-            if self.has_already_entered("https://www.indiegala.com" + giveaway_url):
+            if self.has_already_entered(self._url + giveaway_url):
                 self.print_message("You have already entered this giveaway, skipping...", "WARNING")
                 continue
 
             if self._user_points > giveaway_price:
                 giveaway_id = giveaway_url.split('/')[-1]
-                r = self._session.post("https://www.indiegala.com/giveaways/new_entry",
+                r = self._session.post(self._url + "/new_entry",
                                        json={"giv_id": giveaway_id, "ticket_price": giveaway_price})
                 if r.status_code == 200:
                     self.print_message("Success", "SUCCESS")

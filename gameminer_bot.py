@@ -6,7 +6,7 @@ from the_bot import TheBot
 
 class GameminerBot(TheBot):
     """
-    Bot for Opiumpulses.com
+    Bot for gameminer.com
     """
 
     def __init__(self, bot_name, cookies):
@@ -17,6 +17,7 @@ class GameminerBot(TheBot):
         """
         super().__init__(bot_name, cookies)
         self._user_points = 0
+        self._url = "http://gameminer.net"
 
     def start(self):
         """
@@ -29,7 +30,7 @@ class GameminerBot(TheBot):
         """
         Getting current amount of points
         """
-        page = self.get_page("http://gameminer.net/")
+        page = self.get_page(self._url)
         points_parser = BeautifulSoup(page, "html.parser")
         points = points_parser.find_all(class_="user__coal")
         try:
@@ -42,7 +43,7 @@ class GameminerBot(TheBot):
         """
         Parsing page and entering every available giveaway
         """
-        page = self.get_page("http://gameminer.net/")
+        page = self.get_page(self._url)
         page_parser = BeautifulSoup(page, "html.parser")
         giveaways = page_parser.find_all(class_="giveaway__container")
 
@@ -66,7 +67,7 @@ class GameminerBot(TheBot):
 
             if self._user_points > giveaway_price:
                 # Gameminer requires _xsrf cookie to be sent as Form data
-                r = self._session.post("http://gameminer.net" + giveaway_url,
+                r = self._session.post(self._url + giveaway_url,
                                        data={"_xsrf": self._session.cookies.get("_xsrf"), "json": "true"})
                 if r.status_code == 200:
                     self.print_message("Success", "SUCCESS")

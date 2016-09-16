@@ -6,7 +6,7 @@ from the_bot import TheBot
 
 class OpiumpulsesBot(TheBot):
     """
-    Bot for Opiumpulses.com
+    Bot for opiumpulses.com
     """
 
     def __init__(self, bot_name, cookies):
@@ -17,6 +17,7 @@ class OpiumpulsesBot(TheBot):
         """
         super().__init__(bot_name, cookies)
         self._user_points = 0
+        self._url = "http://www.opiumpulses.com/"
 
     def start(self):
         """
@@ -29,7 +30,7 @@ class OpiumpulsesBot(TheBot):
         """
         Getting current amount of points
         """
-        page = self.get_page("http://www.opiumpulses.com/")
+        page = self.get_page(self._url)
         points_parser = BeautifulSoup(page, "html.parser")
         try:
             self._user_points = self.get_number(points_parser.find_all("a", attrs={"style": "padding: 3px 10px;cursor: default;"})[0].text)
@@ -42,13 +43,14 @@ class OpiumpulsesBot(TheBot):
         Parsing page and entering every available giveaway
         """
         self.get_user_points()
-        page = self.get_page("http://www.opiumpulses.com/")
+        page = self.get_page(self._url)
         page_parser = BeautifulSoup(page, "html.parser")
         giveaways = page_parser.find_all(class_="col-xs-4 col-md-3 well product-box")
 
         for giveaway in giveaways:
             self.get_user_points()
             giveaway_data = giveaway.find_all("a")
+
             # There should be 3 links if you haven't entered this giveaway yet
             if len(giveaway_data) <= 2:
                 self.print_message("You have already entered this giveaway", "WARNING")
@@ -58,7 +60,7 @@ class OpiumpulsesBot(TheBot):
             giveaway_url = giveaway_data[2]["href"]
 
             if len(giveaway_price) == 0 or self._user_points > int(giveaway_price[0]):
-                r = self._session.get("http://www.opiumpulses.com" + giveaway_url)
+                r = self._session.get(self._url + giveaway_url)
                 if r.status_code == 200:
                     self.print_message("Success!", "SUCCESS")
                     self.pause_bot(randint(3, 8))
