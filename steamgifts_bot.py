@@ -50,7 +50,6 @@ class SteamgiftsBot(TheBot):
             self.get_user_points()
             giveaway_url = giveaway.find(class_="giveaway__heading__name")["href"]
             check_giveaway = self.has_already_entered(giveaway_url)
-            print(giveaway_url)
 
             if self._user_points < 10:
                 self.print_message("Sleeping for 1 hour... ", "WARNING")
