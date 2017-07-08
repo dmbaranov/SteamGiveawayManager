@@ -16,7 +16,7 @@ class SteamgiftsBot(TheBot):
         self.init_bot()
         self.get_user_info()
 
-        if self._points == -1 or not self._token or not self._user_name:
+        if self._points == -1 or self._points == None or not self._token or not self._user_name:
             self.print_message('Something went wrong while collecting data, exiting...')
             sys.exit(1)
 
@@ -36,7 +36,7 @@ class SteamgiftsBot(TheBot):
             return
 
         self._user_name = page.find('a', attrs={'class': 'nav__avatar-outer-wrap'})['href'][6:]
-        self._points = int(page.find('span', attrs={'class': 'nav__points'}).string) or -1
+        self._points = int(page.find('span', attrs={'class': 'nav__points'}).string)
         self._token = page.find('input', attrs={'type': 'hidden', 'name': 'xsrf_token'})['value']
 
     def parse_main_page(self):
