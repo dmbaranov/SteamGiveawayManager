@@ -1,0 +1,8 @@
+.Python
+.idea
+__pycache__
+bin/
+include/
+lib/
+cookies.ini
+pip-selfcheck.json
