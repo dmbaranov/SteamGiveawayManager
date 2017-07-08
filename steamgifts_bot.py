@@ -26,6 +26,7 @@ class SteamgiftsBot(TheBot):
             self.pause_bot(3600)
             self.print_message('Awaking...', msg_type['INFO'])
 
+            self.get_user_info()
             if len(self._cache) > self._cache_size:
                 self._cache = []
 
@@ -111,6 +112,6 @@ class SteamgiftsBot(TheBot):
             if response_text['type'] == 'success' and self._points != response_text['points']:
                 self.print_message(f'Successfully entered {name}', msg_type['SUCCESS'])
                 self._points = int(response_text['points'])
-                self._cache.push(code)
+                self._cache.append(code)
             else:
                 self.print_message(f'Error occured while entering {name}, skipping... ', msg_type['SUCCESS'])
