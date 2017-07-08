@@ -16,7 +16,7 @@ class SteamgiftsBot(TheBot):
         self.init_bot()
         self.get_user_info()
 
-        if not self._points or not self._token or not self._user_name:
+        if self._points == -1 or not self._token or not self._user_name:
             self.print_message('Something went wrong while collecting data, exiting...')
             sys.exit(1)
 
@@ -36,7 +36,7 @@ class SteamgiftsBot(TheBot):
             return
 
         self._user_name = page.find('a', attrs={'class': 'nav__avatar-outer-wrap'})['href'][6:]
-        self._points = int(page.find('span', attrs={'class': 'nav__points'}).string)
+        self._points = int(page.find('span', attrs={'class': 'nav__points'}).string) or -1
         self._token = page.find('input', attrs={'type': 'hidden', 'name': 'xsrf_token'})['value']
 
     def parse_main_page(self):
@@ -60,7 +60,7 @@ class SteamgiftsBot(TheBot):
 
             self.enter_giveaway(giveaway_code, giveaway_name)
 
-    def get_giveaway_status(self, url, name, code):
+    def get_giveaway_status(self, url, raw_name, code):
         """
         Receives giveaway page and checks if user can enter or not
         :param url: giveaway url
@@ -68,6 +68,7 @@ class SteamgiftsBot(TheBot):
         :param code: code of the giveaway
         :return: boolean, if can join giveaway or not
         """
+        name = raw_name.encode('utf-8').decode('utf-8')
         self.pause_bot(randint(3, 8))
         if code in self._cache:
             self.print_message(f'You\'ve already entered {name}, skipping... ', msg_type['WARNING'])
@@ -94,7 +95,8 @@ class SteamgiftsBot(TheBot):
                     return False
         return True
 
-    def enter_giveaway(self, code, name):
+    def enter_giveaway(self, code, raw_name):
+        name = raw_name.encode('utf-8').decode('utf-8')
         giveaway_url = self._site_url + '/ajax.php'
         giveaway_data = {
             'xsrf_token': self._token,
