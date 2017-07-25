@@ -73,7 +73,7 @@ class SteamgiftsBot(TheBot):
         name = raw_name.encode('utf-8').decode('utf-8')
         self.pause_bot(randint(3, 8))
         if code in self._cache:
-            self.print_message('You\'ve already entered {0}, skipping... '.format(name), msg_type['WARNING'])
+            self.print_message('You\'ve already entered {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
             return False
 
         giveaway_page = self.get_page('{0}/{1}'.format(self._site_url, url))
@@ -83,16 +83,16 @@ class SteamgiftsBot(TheBot):
         enter_buttons = giveaway_page.find_all('div', attrs={'data-do': 'entry_insert'})
 
         if not enter_buttons:
-            self.print_message('Can\'t enter {0}, skipping... '.format(name), msg_type['WARNING'])
+            self.print_message('Can\'t enter {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
             return False
         for button in enter_buttons:
             if 'is-hidden' in button['class']:
-                self.print_message('You\'ve already entered {0}, skipping... '.format(name), msg_type['WARNING'])
+                self.print_message('You\'ve already entered {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
                 return False
             else:
                 giveaway_price = self.get_number(button.text)
                 if giveaway_price > self._points:
-                    self.print_message('You don\'t have enough points to enter {0}, skipping... '.format(name),
+                    self.print_message('You don\'t have enough points to enter {0}, skipping... '.format(name.encode('utf-8')),
                                        msg_type['WARNING'])
                     return False
         return True
@@ -114,8 +114,8 @@ class SteamgiftsBot(TheBot):
         if response.status_code == requests.codes.ok:
             response_text = json.loads(response.text)
             if response_text['type'] == 'success' and self._points != response_text['points']:
-                self.print_message('Successfully entered {0}'.format(name), msg_type['SUCCESS'])
+                self.print_message('Successfully entered {0}'.format(name.encode('utf-8')), msg_type['SUCCESS'])
                 self._points = int(response_text['points'])
                 self._cache.append(code)
             else:
-                self.print_message('Error occured while entering {0}, skipping... '.format(name), msg_type['SUCCESS'])
+                self.print_message('Error occured while entering {0}, skipping... '.format(name.encode('utf-8')), msg_type['SUCCESS'])
