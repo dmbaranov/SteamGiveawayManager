@@ -1,6 +1,7 @@
 import re
 import sys
 import time
+import platform
 import requests
 import configparser
 from termcolor import colored
@@ -93,7 +94,13 @@ class TheBot:
         :param color: message color
         """
         updated_text = '[{0}] {1}: {2}'.format(datetime.now().strftime("%H:%M:%S"), self._bot_name, text)
-        message = colored(updated_text, color)
+
+        if platform.system() == 'Windows':
+            # Colors doesn't work in Windows
+            message = updated_text
+        else:
+            message = colored(updated_text, color)
+
         print(message)
 
     @staticmethod
