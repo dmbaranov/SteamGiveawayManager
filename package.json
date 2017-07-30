@@ -1,0 +1,14 @@
+{
+  "name": "SGM2",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:theWaR13/SteamGiveawayManager.git",
+  "author": "Dmitriy Baranov <dmitrii.baranov@relax-gaming.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.3",
+    "http": "^0.0.0",
+    "socket.io": "^2.0.3",
+    "socket.io-client": "^2.0.3"
+  }
+}

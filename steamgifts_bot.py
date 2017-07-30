@@ -68,7 +68,7 @@ class SteamgiftsBot(TheBot):
         :param code: code of the giveaway
         :return: boolean, if can join giveaway or not
         """
-        name = raw_name.encode('utf-8').decode('utf-8')
+        name = raw_name.encode('utf-8')
         self.pause_bot(randint(3, 8))
         if code in self._cache:
             self.print_message(f'You\'ve already entered {name}, skipping... ', msg_type['WARNING'])
@@ -96,7 +96,7 @@ class SteamgiftsBot(TheBot):
         return True
 
     def enter_giveaway(self, code, raw_name):
-        name = raw_name.encode('utf-8').decode('utf-8')
+        name = raw_name.encode('utf-8')
         giveaway_url = self._site_url + '/ajax.php'
         giveaway_data = {
             'xsrf_token': self._token,

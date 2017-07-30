@@ -6,3 +6,4 @@ include/
 lib/
 cookies.ini
 pip-selfcheck.json
+/node_modules
