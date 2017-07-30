@@ -1,6 +1,7 @@
 import re
 import sys
 import time
+import platform
 import requests
 import configparser
 from termcolor import colored
@@ -56,6 +57,7 @@ class TheBot:
             bot_cookies = config[self._bot_name]
         except KeyError:
             self.print_message('No cookies for this bot', msg_type['ERROR'])
+            input('Press any key to close an application...')
             sys.exit(1)
 
         for cookie_name in bot_cookies:
@@ -64,7 +66,7 @@ class TheBot:
         for k, v in request_headers.items():
             self._session.headers.update({k: v})
         # self._session.headers.update({'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'Accept': ACCEPT})
-        self.print_message(f'Everything seems to be ready for {self._bot_name} bot', msg_type['SUCCESS'])
+        self.print_message('Everything seems to be ready for {0} bot'.format(self._bot_name), msg_type['SUCCESS'])
 
     def get_page(self, url):
         """
@@ -80,7 +82,7 @@ class TheBot:
             return None
 
         if response.status_code != requests.codes.ok:
-            self.print_message(f'Page has returned {response.status_code} code', msg_type['ERROR'])
+            self.print_message('Page has returned {0} code'.format(response.status_code), msg_type['ERROR'])
             return None
 
         return BeautifulSoup(response.text, 'html.parser')
@@ -91,8 +93,14 @@ class TheBot:
         :param text: message text
         :param color: message color
         """
-        updated_text = f'[{datetime.now().strftime("%H:%M:%S")}] {self._bot_name}: {text}'
-        message = colored(updated_text, color)
+        updated_text = '[{0}] {1}: {2}'.format(datetime.now().strftime("%H:%M:%S"), self._bot_name, text)
+
+        if platform.system() == 'Windows':
+            # Colors doesn't work in Windows
+            message = updated_text
+        else:
+            message = colored(updated_text, color)
+
         print(message)
 
     @staticmethod

@@ -4,6 +4,7 @@ import json
 import requests
 from random import randint
 from the_bot import TheBot, msg_type
+from multiprocessing import Queue
 
 
 class SteamgiftsBot(TheBot):
@@ -18,6 +19,7 @@ class SteamgiftsBot(TheBot):
 
         if self._points == -1 or self._points == None or not self._token or not self._user_name:
             self.print_message('Something went wrong while collecting data, exiting...')
+            input('Press any key to close an application...')
             sys.exit(1)
 
         while True:
@@ -47,7 +49,7 @@ class SteamgiftsBot(TheBot):
         giveaway_list = main_page.find_all('div', attrs={'data-game-id': re.compile(r'[+-]?\d+(?:\.\d+)?')})
         for giveaway in giveaway_list:
             if self._points == 0:
-                self.print_message(f'You don\'t have points, sleeping for 1 hour... ', msg_type['WARNING'])
+                self.print_message('You don\'t have points, sleeping for 1 hour...', msg_type['WARNING'])
                 return
 
             giveaway_code = giveaway.find('a', attrs={'class': 'giveaway__heading__name'})['href'].split('/')[2]
@@ -71,26 +73,26 @@ class SteamgiftsBot(TheBot):
         name = raw_name.encode('utf-8')
         self.pause_bot(randint(3, 8))
         if code in self._cache:
-            self.print_message(f'You\'ve already entered {name}, skipping... ', msg_type['WARNING'])
+            self.print_message('You\'ve already entered {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
             return False
 
-        giveaway_page = self.get_page(f'{self._site_url}/{url}')
+        giveaway_page = self.get_page('{0}/{1}'.format(self._site_url, url))
         if not giveaway_page:
             return False
 
         enter_buttons = giveaway_page.find_all('div', attrs={'data-do': 'entry_insert'})
 
         if not enter_buttons:
-            self.print_message(f'Can\'t enter {name}, skipping... ', msg_type['WARNING'])
+            self.print_message('Can\'t enter {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
             return False
         for button in enter_buttons:
             if 'is-hidden' in button['class']:
-                self.print_message(f'You\'ve already entered {name}, skipping... ', msg_type['WARNING'])
+                self.print_message('You\'ve already entered {0}, skipping... '.format(name.encode('utf-8')), msg_type['WARNING'])
                 return False
             else:
                 giveaway_price = self.get_number(button.text)
                 if giveaway_price > self._points:
-                    self.print_message(f'You don\'t have enough points to enter {name}, skipping... ',
+                    self.print_message('You don\'t have enough points to enter {0}, skipping... '.format(name.encode('utf-8')),
                                        msg_type['WARNING'])
                     return False
         return True
@@ -112,8 +114,8 @@ class SteamgiftsBot(TheBot):
         if response.status_code == requests.codes.ok:
             response_text = json.loads(response.text)
             if response_text['type'] == 'success' and self._points != response_text['points']:
-                self.print_message(f'Successfully entered {name}', msg_type['SUCCESS'])
+                self.print_message('Successfully entered {0}'.format(name.encode('utf-8')), msg_type['SUCCESS'])
                 self._points = int(response_text['points'])
                 self._cache.append(code)
             else:
-                self.print_message(f'Error occured while entering {name}, skipping... ', msg_type['SUCCESS'])
+                self.print_message('Error occured while entering {0}, skipping... '.format(name.encode('utf-8')), msg_type['SUCCESS'])
