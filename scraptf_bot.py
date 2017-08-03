@@ -1,4 +1,6 @@
 import re
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from the_bot import TheBot
 from subprocess import Popen
 
@@ -17,24 +19,46 @@ class ScrapTF(TheBot):
         self._user_id = None
         self._group_id = None
         self._raffle_id = None
+        self._websocket_proc = None
 
     def start(self):
         self.init_bot()
-        self.get_user_info()
 
-        while True:
-            # Parse raffle page
-            pass
+        chrome_options = Options()
+        # chrome_options.add_argument('headless')
+        # chrome_options.add_argument('disable-gpu')
+
+        driver = webdriver.Chrome(chrome_options=chrome_options)
+
+        driver.get('https://scrap.tf/raffles')
+
+        driver.implicitly_wait(15)
+        # self.invoke_socket_connection()
+        me = driver.find_elements_by_class_name('nav-userinfo')
+        print(me)
+
+        # self.get_user_info()
+
+        # while True:
+        #     # Parse raffle page
+        #     pass
+        # self.get_raffles_page()
 
     def get_page(self, url):
+        # Killing current websocket connection via killing the process
+        if hasattr(self._websocket_proc, 'kill'):
+            self._websocket_proc.kill()
+
         # Reinvoke socket connection every time we get the page
-        pass
+        if self._raffle_id and self._queue_hash and self._user_id and self._group_id:
+            self.invoke_socket_connection()
+
+        return super().get_page(url)
 
     def get_user_info(self):
         page = self.get_page(self._site_url)
-        self.invoke_socket_connection()
 
-        scraptf_script = page.findAll('script', attrs={'type': 'text/javascript'})[-1]
+        scraptf_script = page.find_all('script', attrs={'type': 'text/javascript'})[-1]
         script_content = scraptf_script.get_text()
 
         raffle_string = script_content.splitlines()[RAFFLE_ID_INDEX]
@@ -54,8 +78,17 @@ class ScrapTF(TheBot):
 
         self.invoke_socket_connection()
 
-
     def invoke_socket_connection(self):
-        node_proc = Popen(['node', 'scraptf_bot.js', self._user_id, self._group_id, self._queue_hash, self._raffle_id])
+        self._websocket_proc = Popen(['node', 'scraptf_bot.js', self._user_id, self._group_id, self._queue_hash, self._raffle_id])
+
+    def get_raffles_page(self):
+        page = self.get_page(self._site_url + 'raffles')
+        print(page.prettify())
+
+        # if page.find('div', attrs={'class': 'panel-bot-prevention'}):
+        #     print('Found initial bot prevention')
+        #
+        #     recaptcha_element = page.find_all('iframe', attrs={'src': re.compile('google')})
+        #     print(recaptcha_element)
 
 

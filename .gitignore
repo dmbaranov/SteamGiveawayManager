@@ -7,3 +7,6 @@ __pycache__
 cookies.ini
 pip-selfcheck.json
 /node_modules
+/selenium
+geckodriver.log
+steamgifts_bot.pyc
