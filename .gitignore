@@ -4,9 +4,7 @@ __pycache__
 /bin/
 /include/
 /lib/
-cookies.ini
-pip-selfcheck.json
-/node_modules
-/selenium
-geckodriver.log
 steamgifts_bot.pyc
+cookies.ini
+/selenium
+/variables.env

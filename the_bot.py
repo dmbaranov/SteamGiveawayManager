@@ -68,6 +68,8 @@ class TheBot:
         # self._session.headers.update({'User-Agent': UA, 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', 'Accept': ACCEPT})
         self.print_message('Everything seems to be ready for {0} bot'.format(self._bot_name), msg_type['SUCCESS'])
 
+        return bot_cookies
+
     def get_page(self, url):
         """
         Resolving page by given url, checks status code and returns its content
