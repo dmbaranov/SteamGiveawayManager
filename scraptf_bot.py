@@ -54,8 +54,8 @@ class ScrapTF(TheBot):
 
     def start(self):
         chrome_options = Options()
-        chrome_options.add_argument('headless')
-        chrome_options.add_argument('disable-gpu')
+        # chrome_options.add_argument('headless')
+        # chrome_options.add_argument('disable-gpu')
 
         self._driver = webdriver.Chrome(chrome_options=chrome_options)
         self.init_bot()
@@ -187,14 +187,21 @@ class ScrapTF(TheBot):
         try:
             recaptcha_elem = self._driver.find_elements_by_tag_name('iframe')[0]
         except IndexError:
-            self.print_message('Can\'t bypass bot prevention')
+            self.print_message('Can\'t bypass bot prevention here')
             return
 
+        self.print_message('Completeing bot prevention...', msg_type['INFO'])
         recaptcha_key = self.get_recaptcha_key(recaptcha_elem)
         recaptcha_result = self.solve_recaptcha(recaptcha_key, self._site_url + RAFFLES_LIST_URL)
 
         if recaptcha_result:
             # Call js method for authentication
-            pass
+            self.print_message('Successfully completed bot prevention', msg_type['SUCCESS'])
+            self._driver.execute_script(
+                "ScrapTF.Ajax('botpreventionajax/Verify', {{data: '{0}', type: 'raffles'}})".format(recaptcha_result))
+            time.sleep(4)
+            self.get_raffles_page()
         else:
-            self.print_message('Can\'t bypass bot prevention')
+            self.print_message('Can\'t bypass bot prevention', msg_type['ERROR'])
+
+        self.get_raffles_page()
