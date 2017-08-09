@@ -54,8 +54,8 @@ class ScrapTF(TheBot):
 
     def start(self):
         chrome_options = Options()
-        # chrome_options.add_argument('headless')
-        # chrome_options.add_argument('disable-gpu')
+        chrome_options.add_argument('headless')
+        chrome_options.add_argument('disable-gpu')
 
         self._driver = webdriver.Chrome(chrome_options=chrome_options)
         self.init_bot()
