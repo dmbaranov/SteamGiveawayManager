@@ -1,4 +1,3 @@
-import time
 import sys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -54,8 +53,8 @@ class ScrapTF(TheBot):
 
     def start(self):
         chrome_options = Options()
-        chrome_options.add_argument('headless')
-        chrome_options.add_argument('disable-gpu')
+        # chrome_options.add_argument('headless')
+        # chrome_options.add_argument('disable-gpu')
 
         self._driver = webdriver.Chrome(chrome_options=chrome_options)
         self.init_bot()
@@ -75,7 +74,7 @@ class ScrapTF(TheBot):
 
     def get_user_info(self):
         self._driver.get('https://scrap.tf')
-        self._driver.implicitly_wait(WAIT_TIME)
+        self.pause_bot(WAIT_TIME)
 
         user = self._driver.find_elements_by_class_name('nav-userinfo')
 
@@ -87,24 +86,25 @@ class ScrapTF(TheBot):
 
         bot_prevention = self._driver.find_elements_by_class_name('panel-bot-prevention')
 
-        if len(bot_prevention) > 0:
+        while len(bot_prevention) > 0:
+            self.pause_bot(WAIT_TIME)
             self.bypass_bot_prevention()
-        else:
-            for i in range(5):
-                # Scrolling to the bottom to upload more raffles
-                self._driver.execute_script('window.scrollTo(0, document.body.scrollHeight - 1000);')
-                time.sleep(5)
 
-            raffles = self._driver.find_elements_by_class_name('panel-raffle')
-            for raffle in raffles:
-                try:
-                    not_joined = len(raffle.get_attribute('style')) == 0
-                except WebDriverException:
-                    self.print_message('Skipping...', msg_type['ERROR'])
-                    continue
+        for i in range(5):
+            # Scrolling to the bottom to upload more raffles
+            self._driver.execute_script('window.scrollTo(0, document.body.scrollHeight - 1000);')
+            self.pause_bot(WAIT_TIME)
 
-                if not_joined:
-                    raffles_list.append(raffle.get_attribute('id')[-6:])
+        raffles = self._driver.find_elements_by_class_name('panel-raffle')
+        for raffle in raffles:
+            try:
+                not_joined = len(raffle.get_attribute('style')) == 0
+            except WebDriverException:
+                self.print_message('Skipping...', msg_type['ERROR'])
+                continue
+
+            if not_joined:
+                raffles_list.append(raffle.get_attribute('id')[-6:])
 
         for index, item in enumerate(raffles_list):
             self.print_message('Completing raffle {0} of {1}'.format(index, len(raffles_list)), msg_type['INFO'])
@@ -112,6 +112,10 @@ class ScrapTF(TheBot):
             self.process_raffles(item)
 
     def process_raffles(self, raffle_id):
+        bot_prevention = self._driver.find_elements_by_class_name('panel-bot-prevention')
+        if len(bot_prevention) > 0:
+            self.bypass_bot_prevention()
+
         try:
             button = self._driver.find_elements_by_id('raffle-enter')[0]
         except IndexError:
@@ -119,6 +123,7 @@ class ScrapTF(TheBot):
             return
 
         if 'btn-danger' in button.get_attribute('class'):
+            # If button is equal to Leave raffle
             return
 
         try:
@@ -127,7 +132,7 @@ class ScrapTF(TheBot):
             self.print_message('Skipping', msg_type['ERROR'])
             return
 
-        time.sleep(WAIT_TIME)
+        self.pause_bot(WAIT_TIME)
         try:
             outer_elem = self._driver.find_elements_by_id('enter-button-outside')[0]
             recaptcha_elem = outer_elem.find_elements_by_tag_name('iframe')[0]
@@ -155,7 +160,7 @@ class ScrapTF(TheBot):
             self.print_message('Can\' solve a reCaptcha', msg_type['ERROR']) 
 
         self._driver.get(self._site_url + RAFFLES_LIST_URL)
-        time.sleep(WAIT_TIME)
+        self.pause_bot(WAIT_TIME)
 
     def solve_recaptcha(self, recaptcha_key, current_url):
         recaptcha_request = self.get_page(recaptcha_solver_url.format(
@@ -166,7 +171,7 @@ class ScrapTF(TheBot):
         if recaptcha_request[:2] == 'OK':
             retries = 0
             while retries <= 20:
-                time.sleep(8)
+                self.pause_bot(WAIT_TIME * 2)
                 response = self.get_page(recaptcha_result_url.format(
                     self._2captcha_api_key, int(recaptcha_request[3:])))
 
@@ -184,10 +189,13 @@ class ScrapTF(TheBot):
         return recaptcha_elem.get_attribute('src').split('&')[0].split('=')[-1]
 
     def bypass_bot_prevention(self):
+        self._driver.get(self._site_url + 'raffles')
+        self.pause_bot(WAIT_TIME)
+
         try:
             recaptcha_elem = self._driver.find_elements_by_tag_name('iframe')[0]
         except IndexError:
-            self.print_message('Can\'t bypass bot prevention here')
+            self.print_message('Can\'t bypass bot prevention')
             return
 
         self.print_message('Completeing bot prevention...', msg_type['INFO'])
@@ -199,8 +207,7 @@ class ScrapTF(TheBot):
             self.print_message('Successfully completed bot prevention', msg_type['SUCCESS'])
             self._driver.execute_script(
                 "ScrapTF.Ajax('botpreventionajax/Verify', {{data: '{0}', type: 'raffles'}})".format(recaptcha_result))
-            time.sleep(4)
-            self.get_raffles_page()
+            self.pause_bot(WAIT_TIME)
         else:
             self.print_message('Can\'t bypass bot prevention', msg_type['ERROR'])
 
